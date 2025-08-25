@@ -3,9 +3,9 @@ import pandas as pd
 from utils.api import extract_id, scrape
 
 st.set_page_config(page_title="Walmart Review Analyzer", page_icon="🛒", layout="centered")
-st.title("Walmart Review Analyzer (Streamlit + FastAPI)")
+st.title("Walmart Product Reviews AI Summarizer")
 
-url = st.text_input("Paste Walmart product URL")
+url = st.text_input("Enter Walmart product URL")
 
 if st.button("Summarize") and url:
     try:
