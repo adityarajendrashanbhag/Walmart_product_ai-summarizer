@@ -33,18 +33,20 @@ with st.form("summarize_form"):
 
 if submit:
     if not url or not url.strip():
-        st.info("Please enter a valid Walmart product URL and click 'Summarize'.")
+        st.info("Please enter a valid Walmart product URL")
     else:
         try:
+            # Extract product ID
             with st.spinner("Extracting product ID..."):
                 pid = extract_id(url)["product_id"]
 
+            # Scrape reviews using SerpAPI
             with st.spinner("Scraping…"):
                 data = scrape(pid)["rows"]
 
+            # Cleaning the data using tokenization
             with st.spinner("Cleaning data ...."):
-                df = pd.DataFrame(data)
-                cleaned_data = data_clean(df.to_dict(orient="records"))
+                cleaned_data = data_clean(data)
                 st.dataframe(pd.DataFrame(cleaned_data))
 
         except Exception as e:
