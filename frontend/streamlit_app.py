@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import base64
-from utils.api import extract_id, scrape
+from utils.api import extract_id, scrape, data_clean
 
 # Add background image using Base64 encoding
 def add_bg_image(image_path):
@@ -38,11 +38,15 @@ if submit:
         try:
             with st.spinner("Extracting product ID..."):
                 pid = extract_id(url)["product_id"]
-            st.success(f"Product ID: {pid}")
 
             with st.spinner("Scraping…"):
                 data = scrape(pid)["rows"]
-            st.dataframe(pd.DataFrame(data))
+
+            with st.spinner("Cleaning data ...."):
+                df = pd.DataFrame(data)
+                cleaned_data = data_clean(df.to_dict(orient="records"))
+                st.dataframe(pd.DataFrame(cleaned_data))
+
         except Exception as e:
             st.error(f"Error: {e}")
 
