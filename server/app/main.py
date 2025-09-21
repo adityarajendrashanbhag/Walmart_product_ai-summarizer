@@ -6,6 +6,8 @@ from pydantic import BaseModel
 from shared.walmart.scraper import fetch_walmart_reviews
 import pandas as pd
 import unicodedata
+import boto3, json
+from io import StringIO
 
 app = FastAPI(title="Walmart API", version="0.1.0")
 app.add_middleware(
@@ -14,6 +16,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Initialize Bedrock client
+bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")
+
+# S3 client
+s3 = boto3.client("s3", region_name="us-east-1")  # change region if needed
 
 WALMART_ID = re.compile(r"/ip/[^/]+/(\d+)")
 
@@ -24,6 +32,15 @@ class ScrapeIn(BaseModel):
     product_id: str
     pages: int = 5
     sort: str = "helpful"
+
+def load_reviews_from_s3(bucket: str, key: str) -> pd.DataFrame:
+    """
+    Reads a CSV file from S3 and returns a pandas DataFrame.
+    """
+    response = s3.get_object(Bucket=bucket, Key=key)
+    content = response["Body"].read().decode("utf-8")
+    df = pd.read_csv(StringIO(content))
+    return df
 
 @app.get("/health")
 def health():
@@ -99,3 +116,48 @@ def data_clean(payload: dict):  # payload already contains `json_result`
 
     except Exception as e:
         raise HTTPException(500, f"Data cleaning failed: {e}")
+
+@app.post("/summarize")
+def summarize_from_s3(payload: dict):
+    """
+    Expects: {"bucket": "my-walmart-data", "key": "walmart_reviews.csv"}
+    """
+    try:
+        bucket = payload.get("bucket")
+        key = payload.get("key")
+
+        if not bucket or not key:
+            raise HTTPException(400, "Bucket and key required")
+
+        # Load reviews from S3
+        df = load_reviews_from_s3(bucket, key)
+
+        # Convert to text block for LLM
+        reviews_text = "\n".join(
+            [f"Rating: {row['customer_rating']} | Review: {row['review_text']}"
+             for _, row in df.iterrows()]
+        )
+
+        # Build prompt for Bedrock
+        prompt = f"""
+        Summarize these Walmart product reviews into:
+        - Pros (bullet points)
+        - Cons (bullet points)
+        - Recommendation (1–2 sentences)
+
+        Reviews:
+        {reviews_text}
+        """
+
+        body = json.dumps({"prompt": prompt, "max_tokens_to_sample": 400})
+
+        response = bedrock.invoke_model(
+            modelId="anthropic.claude-v2",  # or another model ID available to you
+            body=body
+        )
+
+        result = response["body"].read().decode()
+        return {"summary": result}
+
+    except Exception as e:
+        raise HTTPException(500, f"Summarization failed: {e}")
