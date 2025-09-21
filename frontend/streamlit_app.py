@@ -1,7 +1,8 @@
 import streamlit as st
 import pandas as pd
 import base64
-from utils.api import extract_id, scrape, data_clean
+from utils.api import extract_id, scrape, data_clean, summarize
+import time
 
 # Add background image using Base64 encoding
 def add_bg_image(image_path):
@@ -20,6 +21,16 @@ def add_bg_image(image_path):
         """,
         unsafe_allow_html=True
     )
+
+def typing_effect(text, placeholder):
+    """
+    Simulates a typing effect by updating the placeholder with one character at a time.
+    :param text: The full text to display.
+    :param placeholder: The Streamlit placeholder to update.
+    """
+    for i in range(1, len(text) + 1):
+        placeholder.markdown(text[:i])  # Update the placeholder with the current substring
+        time.sleep(0.01)  # Adjust the delay for typing speed
 
 # Set the background image
 add_bg_image("frontend/walmart-background.jpg")
@@ -50,11 +61,11 @@ if submit:
 
             # Summarize from S3
             with st.spinner("Summarizing with Bedrock..."):
-                from utils.api import summarize  # import your summarize API wrapper
                 summary = summarize(pid)["summary"]
 
             st.subheader("📊 AI-Generated Summary")
-            st.markdown(summary)
+            placeholder = st.empty()  # Create a placeholder for the summary
+            typing_effect(summary, placeholder)
 
         except Exception as e:
             st.error(f"Error: {e}")

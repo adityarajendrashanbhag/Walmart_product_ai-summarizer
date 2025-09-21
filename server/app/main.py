@@ -179,9 +179,9 @@ def summarize_from_s3(payload: dict):
         # Prompt for Qwen
         prompt = f"""
         Summarize these Walmart product reviews into:
-        - Pros (bullet points)
-        - Cons (bullet points)
-        - Recommendation (1–2 sentences)
+        - Pros (Top 4 bullet points)
+        - Cons (Top 4 bullet points)
+        - Recommendation (1–2 sentences) unbiased 
 
         Reviews:
         {reviews_text}
