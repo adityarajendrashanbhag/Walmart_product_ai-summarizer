@@ -132,13 +132,13 @@ def summarize_from_s3(payload: dict):
         # Load reviews from S3
         df = load_reviews_from_s3(bucket, key)
 
-        # Convert to text block for LLM
+        # Convert reviews into one big text block
         reviews_text = "\n".join(
             [f"Rating: {row['customer_rating']} | Review: {row['review_text']}"
              for _, row in df.iterrows()]
         )
 
-        # Build prompt for Bedrock
+        # Prompt for Qwen
         prompt = f"""
         Summarize these Walmart product reviews into:
         - Pros (bullet points)
@@ -149,15 +149,32 @@ def summarize_from_s3(payload: dict):
         {reviews_text}
         """
 
-        body = json.dumps({"prompt": prompt, "max_tokens_to_sample": 400})
+        # Build Bedrock body (Chat format)
+        body = {
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": prompt}
+                    ]
+                }
+            ],
+            "max_tokens": 400,
+            "temperature": 0.3,
+            "top_p": 0.9
+        }
 
         response = bedrock.invoke_model(
-            modelId="anthropic.claude-v2",  # or another model ID available to you
-            body=body
+            modelId="qwen.qwen3-32b-v1:0",
+            contentType="application/json",
+            accept="application/json",
+            body=json.dumps(body)
         )
 
-        result = response["body"].read().decode()
-        return {"summary": result}
+        result = json.loads(response["body"].read())
+        summary_text = result["choices"][0]["message"]["content"]
+
+        return {"summary": summary_text}
 
     except Exception as e:
         raise HTTPException(500, f"Summarization failed: {e}")
