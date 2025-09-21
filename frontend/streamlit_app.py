@@ -46,8 +46,15 @@ if submit:
 
             # Cleaning the data using tokenization
             with st.spinner("Cleaning data ...."):
-                cleaned_data = data_clean(data)
-                st.dataframe(pd.DataFrame(cleaned_data))
+                cleaned_data = data_clean(data, pid)
+
+            # Summarize from S3
+            with st.spinner("Summarizing with Bedrock..."):
+                from utils.api import summarize  # import your summarize API wrapper
+                summary = summarize(pid)["summary"]
+
+            st.subheader("📊 AI-Generated Summary")
+            st.markdown(summary)
 
         except Exception as e:
             st.error(f"Error: {e}")

@@ -28,13 +28,22 @@ def scrape(product_id: str) -> dict:
     r.raise_for_status()
     return r.json()
 
-def data_clean(data: list[dict]) -> dict:
+def data_clean(data: list[dict], pid: str) -> dict:
     """
     Perform data cleaning on the provided reviews data.
     :param data: reviews data in JSON format
     :return: cleaned data in JSON format
 
     """
-    r = requests.post(f"{API_BASE}/data_clean", json={"json_result": data}, timeout=60)
+    r = requests.post(f"{API_BASE}/data_clean", json={"json_result": data, "product_id": pid}, timeout=60)
     r.raise_for_status()
     return r.json()
+
+def summarize(product_id: str):
+    payload = {
+        "bucket": "walmart-scraped-data",
+        "key": f"{product_id}.csv"
+    }
+    res = requests.post(f"{API_BASE}/summarize", json=payload)
+    res.raise_for_status()
+    return res.json()

@@ -22,6 +22,7 @@ bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")
 
 # S3 client
 s3 = boto3.client("s3", region_name="us-east-1")  # change region if needed
+S3_BUCKET = "walmart-scraped-data"
 
 WALMART_ID = re.compile(r"/ip/[^/]+/(\d+)")
 
@@ -41,6 +42,21 @@ def load_reviews_from_s3(bucket: str, key: str) -> pd.DataFrame:
     content = response["Body"].read().decode("utf-8")
     df = pd.read_csv(StringIO(content))
     return df
+
+def s3_file_exists(bucket: str, key: str) -> bool:
+    try:
+        s3.head_object(Bucket=bucket, Key=key)
+        return True
+    except s3.exceptions.ClientError as e:
+        if e.response['Error']['Code'] == "404":
+            return False
+        raise
+
+def upload_df_to_s3(df: pd.DataFrame, bucket: str, key: str):
+    csv_buffer = StringIO()
+    df.to_csv(csv_buffer, index=False)
+    s3.put_object(Bucket=bucket, Key=key, Body=csv_buffer.getvalue())
+    return f"s3://{bucket}/{key}"
 
 @app.get("/health")
 def health():
@@ -67,8 +83,22 @@ def scrape(payload: ScrapeIn):
         raise HTTPException(500, f"Scrape failed: {e}")
 
 @app.post("/data_clean")
-def data_clean(payload: dict):  # payload already contains `json_result`
+def data_clean(payload: dict):  # payload already contains `json_result` and 'product_id'
     try:
+        product_id = payload.get("product_id")
+        if not product_id:
+            raise HTTPException(400, "product_id is required in payload")
+
+        s3_key = f"{product_id}.csv"
+
+        # ✅ Step 1: Check if file exists in S3 (cache)
+        if s3_file_exists(S3_BUCKET, s3_key):
+            return {
+                "status": "cached",
+                "message": f"File already exists in S3: {s3_key}",
+                "s3_uri": f"s3://{S3_BUCKET}/{s3_key}"
+            }
+
         def clean_text(text: str) -> str:
             if not isinstance(text, str):
                 return ""
@@ -87,8 +117,8 @@ def data_clean(payload: dict):  # payload already contains `json_result`
 
             # Collapse multiple spaces
             text = re.sub(r"\s+", " ", text).strip()
-
             return text
+
         # Step 1: Load reviews into DataFrame
         reviews_df = pd.DataFrame(payload["json_result"])
 
@@ -112,7 +142,15 @@ def data_clean(payload: dict):  # payload already contains `json_result`
         # ✅ Prevent NaN -> JSON error
         reviews_df = reviews_df.where(pd.notnull(reviews_df), None)
 
-        return reviews_df.to_dict(orient="records")
+        # ✅ Step 3: Upload to S3
+        upload_df_to_s3(reviews_df, S3_BUCKET, s3_key)
+
+        return {
+            "status": "uploaded",
+            "s3_uri": f"s3://{S3_BUCKET}/{s3_key}",
+            "count": len(reviews_df)
+        }
+        # return reviews_df.to_dict(orient="records")
 
     except Exception as e:
         raise HTTPException(500, f"Data cleaning failed: {e}")
@@ -159,7 +197,7 @@ def summarize_from_s3(payload: dict):
                     ]
                 }
             ],
-            "max_tokens": 400,
+            "max_tokens": 10000,
             "temperature": 0.3,
             "top_p": 0.9
         }
