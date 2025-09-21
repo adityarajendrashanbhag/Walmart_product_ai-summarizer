@@ -47,6 +47,9 @@ if submit:
         st.info("Please enter a valid Walmart product URL")
     else:
         try:
+            placeholder = st.empty()
+            placeholder.markdown("")  # Reset the placeholder content
+
             # Extract product ID
             with st.spinner("Extracting product ID..."):
                 pid = extract_id(url)["product_id"]
@@ -63,7 +66,8 @@ if submit:
             with st.spinner("Summarizing with Bedrock..."):
                 summary = summarize(pid)["summary"]
 
-            st.subheader("📊 AI-Generated Summary")
+            placeholder.markdown("")  # Reset the placeholder content
+            st.subheader("📊 AI Generated Summary")
             placeholder = st.empty()  # Create a placeholder for the summary
             typing_effect(summary, placeholder)
 
