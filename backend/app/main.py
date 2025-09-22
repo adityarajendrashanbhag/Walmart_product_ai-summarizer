@@ -1,4 +1,4 @@
-# server/app/main.py  (run this with uvicorn)
+# backend/app/main.py  (run this with uvicorn)
 import re
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
