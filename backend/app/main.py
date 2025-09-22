@@ -8,6 +8,7 @@ import pandas as pd
 import unicodedata
 import boto3, json
 from io import StringIO
+import logging
 
 app = FastAPI(title="Walmart API", version="0.1.0")
 app.add_middleware(

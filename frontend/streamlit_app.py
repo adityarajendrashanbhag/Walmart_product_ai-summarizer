@@ -1,10 +1,11 @@
 import streamlit as st
-import pandas as pd
 import base64
 from utils.api import extract_id, scrape, data_clean, summarize
 import time
 import boto3
-from io import BytesIO
+import os
+
+BACKEND_URL = os.getenv("API_BASE", "http://localhost:8000")  # fallback for local dev
 
 def add_bg_image_from_s3(bucket_name, key):
     """
@@ -82,4 +83,3 @@ if submit:
 
         except Exception as e:
             st.error(f"Error: {e}")
-
