@@ -8,7 +8,6 @@ import pandas as pd
 import unicodedata
 import boto3, json
 from io import StringIO
-import logging
 
 app = FastAPI(title="Walmart API", version="0.1.0")
 app.add_middleware(
@@ -92,7 +91,7 @@ def data_clean(payload: dict):  # payload already contains `json_result` and 'pr
 
         s3_key = f"{product_id}.csv"
 
-        # ✅ Step 1: Check if file exists in S3 (cache)
+        # Check if file exists in S3 (cache)
         if s3_file_exists(S3_BUCKET, s3_key):
             return {
                 "status": "cached",
@@ -140,10 +139,10 @@ def data_clean(payload: dict):  # payload already contains `json_result` and 'pr
         reviews_df["review_text"] = reviews_df["review_text"].astype(str).str.lower()
         reviews_df["review_text"] = reviews_df["review_text"].apply(clean_text)
 
-        # ✅ Prevent NaN -> JSON error
+        # Prevent NaN -> JSON error
         reviews_df = reviews_df.where(pd.notnull(reviews_df), None)
 
-        # ✅ Step 3: Upload to S3
+        # Upload to S3 Bucket
         upload_df_to_s3(reviews_df, S3_BUCKET, s3_key)
 
         return {
