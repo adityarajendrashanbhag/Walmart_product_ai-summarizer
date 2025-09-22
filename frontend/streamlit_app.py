@@ -3,11 +3,19 @@ import pandas as pd
 import base64
 from utils.api import extract_id, scrape, data_clean, summarize
 import time
+import boto3
+from io import BytesIO
 
-# Add background image using Base64 encoding
-def add_bg_image(image_path):
-    with open(image_path, "rb") as image_file:
-        encoded_string = base64.b64encode(image_file.read()).decode()
+def add_bg_image_from_s3(bucket_name, key):
+    """
+    Fetches an image from S3 and sets it as the background in Streamlit.
+    :param bucket_name: Name of the S3 bucket.
+    :param key: Key of the image file in the S3 bucket.
+    """
+    s3 = boto3.client("s3")
+    response = s3.get_object(Bucket=bucket_name, Key=key)
+    image_data = response["Body"].read()
+    encoded_string = base64.b64encode(image_data).decode()
     st.markdown(
         f"""
         <style>
@@ -22,6 +30,9 @@ def add_bg_image(image_path):
         unsafe_allow_html=True
     )
 
+# Example usage
+add_bg_image_from_s3("walmart-scraped-data", "walmart-background/walmart-background.jpg")
+
 def typing_effect(text, placeholder):
     """
     Simulates a typing effect by updating the placeholder with one character at a time.
@@ -32,8 +43,6 @@ def typing_effect(text, placeholder):
         placeholder.markdown(text[:i])  # Update the placeholder with the current substring
         time.sleep(0.01)  # Adjust the delay for typing speed
 
-# Set the background image
-add_bg_image("frontend/walmart-background.jpg")
 
 st.set_page_config(page_title="Walmart Review Analyzer", page_icon="🛒", layout="centered")
 st.title("Walmart Product Reviews AI Summarizer")
