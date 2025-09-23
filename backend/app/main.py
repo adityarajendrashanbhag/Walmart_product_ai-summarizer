@@ -3,7 +3,7 @@ import re
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from shared.walmart.scraper import fetch_walmart_reviews
+from backend.shared.scraper import fetch_walmart_reviews
 import pandas as pd
 import unicodedata
 import boto3, json

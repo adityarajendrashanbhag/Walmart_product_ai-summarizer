@@ -14,9 +14,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy app code
 COPY . .
 
-# Copy shared utilities
-COPY ../shared ./shared
-
 # Expose Streamlit port
 EXPOSE 8501
 
