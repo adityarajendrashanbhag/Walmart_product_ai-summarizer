@@ -1,0 +1,26 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Deploy to EC2 via SSH
+      uses: appleboy/ssh-action@v0.1.10
+      with:
+        host: ${{secrets.EC2_HOST }}
+        username: ${{secrets.EC2_USER }}
+        key: ${{secrets.EC2_SSH_KEY }}
+        script: |
+          cd ~/myapp || git clone https://github.com/adityarajendrashanbhag/Walmart_product_summarizer_poc.git ~/myapp
+          cd ~/myapp
+          git pull origin main
+          docker-compose down
+          docker-compose up -d --build
