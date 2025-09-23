@@ -46,7 +46,7 @@ def typing_effect(text, placeholder):
 
 
 st.set_page_config(page_title="Walmart Review Analyzer", page_icon="🛒", layout="centered")
-st.title("Walmart Product Reviews AI Summarizer Aditya")
+st.title("Walmart Product Reviews AI Summarizer")
 
 with st.form("summarize_form"):
     url = st.text_input("Enter Walmart product URL")
