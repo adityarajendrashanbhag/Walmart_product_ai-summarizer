@@ -19,8 +19,8 @@ jobs:
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-          cd ~/myapp || git clone https://github.com/adityarajendrashanbhag/Walmart_product_ai-summarizer.git ~/myapp
-          cd ~/myapp
+          cd ~/Walmart_product_ai-summarizer || git clone https://github.com/adityarajendrashanbhag/Walmart_product_ai-summarizer.git ~/Walmart_product_ai-summarizer
+          cd ~/Walmart_product_ai-summarizer
           git pull origin main
           docker-compose down
           docker-compose up -d --build
