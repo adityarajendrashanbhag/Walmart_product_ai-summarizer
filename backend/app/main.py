@@ -72,6 +72,16 @@ def extract_id(payload: URLIn):
 @app.post("/scrape")
 def scrape(payload: ScrapeIn):
     try:
+        s3_key = f"{payload.product_id}.csv"
+
+        # ✅ Step 1: Check if file already exists in S3
+        if s3_file_exists(S3_BUCKET, s3_key):
+            return {
+                "status": "cached",
+                "message": f"File already exists in S3: {s3_key}",
+                "s3_uri": f"s3://{S3_BUCKET}/{s3_key}"
+            }
+
         reviews = fetch_walmart_reviews(
             product_id=payload.product_id,
             pages=payload.pages,

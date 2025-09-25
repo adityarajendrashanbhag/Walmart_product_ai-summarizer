@@ -10,3 +10,4 @@ fastapi==0.116.1
 uvicorn==0.35.0
 jsonify
 boto3
+websockets==12.0
