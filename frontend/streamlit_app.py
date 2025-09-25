@@ -34,6 +34,27 @@ def add_bg_image_from_s3(bucket_name, key):
 # Example usage
 add_bg_image_from_s3("walmart-scraped-data", "walmart-background/walmart-background.jpg")
 
+# Mobile-friendly CSS tweaks
+st.markdown("""
+<style>
+/* General mobile tweaks */
+@media (max-width: 768px) {
+    .stApp {
+        font-size: 14px;
+        padding: 8px;
+    }
+    h1, h2, h3 {
+        font-size: 1.2em !important;
+    }
+    /* Make text input & button full width */
+    .stTextInput, .stButton button {
+        width: 100% !important;
+    }
+}
+</style>
+""", unsafe_allow_html=True)
+
+
 def typing_effect(text, placeholder):
     """
     Simulates a typing effect by updating the placeholder with one character at a time.
@@ -45,7 +66,13 @@ def typing_effect(text, placeholder):
         time.sleep(0.01)  # Adjust the delay for typing speed
 
 
-st.set_page_config(page_title="Walmart Review Analyzer", page_icon="🛒", layout="centered")
+st.set_page_config(
+    page_title="Walmart Review Analyzer",
+    page_icon="🛒",
+    layout="centered",
+    initial_sidebar_state="collapsed"
+)
+
 st.title("Walmart Product Reviews AI Summarizer")
 
 with st.form("summarize_form"):
@@ -66,20 +93,26 @@ if submit:
 
             # Scrape reviews using SerpAPI
             with st.spinner("Scraping…"):
-                data = scrape(pid)["rows"]
+                result = scrape(pid)
 
-            # Cleaning the data using tokenization
-            with st.spinner("Cleaning data ...."):
-                cleaned_data = data_clean(data, pid)
+            if result.get("status") == "cached":
+                with st.spinner("Summarizing with Bedrock..."):
+                    summary = summarize(pid)["summary"]
+            else:
+                data = result["rows"]
 
-            # Summarize from S3
-            with st.spinner("Summarizing with Bedrock..."):
-                summary = summarize(pid)["summary"]
+                # Cleaning the data using tokenization
+                with st.spinner("Cleaning data ...."):
+                    cleaned_data = data_clean(data, pid)
 
-            placeholder.markdown("")  # Reset the placeholder content
-            st.subheader("📊 AI Generated Summary")
-            placeholder = st.empty()  # Create a placeholder for the summary
-            typing_effect(summary, placeholder)
+                # Summarize from S3
+                with st.spinner("Summarizing with Bedrock..."):
+                    summary = summarize(pid)["summary"]
+            if summary:
+                placeholder.markdown("")  # Reset the placeholder content
+                st.subheader("📊 AI Generated Summary")
+                placeholder = st.empty()  # Create a placeholder for the summary
+                typing_effect(summary, placeholder)
 
         except Exception as e:
             st.error(f"Error: {e}")
