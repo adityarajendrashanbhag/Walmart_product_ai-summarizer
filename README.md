@@ -24,7 +24,7 @@ This project uses a layered service architecture.
 - Domain layer: review cleaning logic
 - Schema layer: request and response contracts
 
-This is a better fit than a simple MVC structure because the project is integration-heavy and workflow-driven.
+This structure keeps HTTP handling, business workflow, and external integrations separated, which makes the codebase easier to maintain and extend.
 
 ## Project Structure
 
@@ -149,6 +149,17 @@ This starts:
 - FastAPI backend on port `8000`
 - Streamlit frontend on port `8501`
 
+## Testing
+
+Run backend tests from the project root:
+
+```bash
+pip install -r backend/requirements.txt
+python -m pytest tests
+```
+
+GitHub Actions also runs the test suite automatically on pushes and pull requests.
+
 ## Key Design Decisions
 
 - Frontend and backend are separated
@@ -161,18 +172,6 @@ This starts:
   - easier to swap providers later
 - S3 is used as a cache and storage layer
   - avoids repeated scraping and cleaning for the same product
-
-## Why This Architecture Is Useful
-
-This structure is useful in industry because it improves:
-
-- maintainability
-- testability
-- onboarding for new engineers
-- separation of concerns
-- flexibility when infrastructure changes
-
-For example, if Bedrock is later replaced with another LLM provider, only the client layer should need major changes.
 
 ## Tech Stack
 
@@ -190,9 +189,3 @@ For example, if Bedrock is later replaced with another LLM provider, only the cl
 - The frontend depends on the backend being reachable through `API_BASE`
 - The summarization flow assumes cleaned review CSVs are stored in S3
 - AWS credentials and SerpAPI credentials must be configured for the app to work end to end
-
-## Interview Summary
-
-If you need to explain this project in interviews:
-
-> This is an AI-enabled review summarization application built with a layered service architecture. Streamlit handles the frontend, FastAPI exposes the backend API, services orchestrate the business workflow, and adapters isolate external systems such as SerpAPI, S3, and AWS Bedrock. This design improves maintainability, testability, and scalability compared with putting all logic directly inside route handlers.
