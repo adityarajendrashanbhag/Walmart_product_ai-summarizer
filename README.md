@@ -76,13 +76,13 @@ User -> Streamlit Frontend -> FastAPI Backend -> Services -> External Systems
 
 Add the system design diagram link here.
 
-`<img width="1621" height="668" alt="walmart_system_design" src="https://github.com/user-attachments/assets/8ae9e424-c424-4860-bf06-1738fc3b4e68" />`
+<img width="1621" height="668" alt="walmart_system_design" src="https://github.com/user-attachments/assets/8ae9e424-c424-4860-bf06-1738fc3b4e68" />
 
 ### Pipeline Design
 
 Add the pipeline design diagram link here.
 
-`<img width="1400" height="900" alt="walmart_diagram1" src="https://github.com/user-attachments/assets/4431a107-1933-4afb-950b-0de246eb9bc7" />`
+<img width="1400" height="900" alt="walmart_diagram1" src="https://github.com/user-attachments/assets/4431a107-1933-4afb-950b-0de246eb9bc7" />
 
 Detailed request flow:
 
