@@ -82,7 +82,7 @@ Add the system design diagram link here.
 
 Add the pipeline design diagram link here.
 
-<img width="1400" height="900" alt="walmart_diagram1" src="https://github.com/user-attachments/assets/4431a107-1933-4afb-950b-0de246eb9bc7" />
+<img width="1800" height="700" alt="walmart_diagram1" src="https://github.com/user-attachments/assets/4431a107-1933-4afb-950b-0de246eb9bc7" />
 
 Detailed request flow:
 
