@@ -70,6 +70,20 @@ User -> Streamlit Frontend -> FastAPI Backend -> Services -> External Systems
                                                    |-> AWS Bedrock
 ```
 
+## Diagrams
+
+### System Design
+
+Add the system design diagram link here.
+
+`<paste-system-design-link>`
+
+### Pipeline Design
+
+Add the pipeline design diagram link here.
+
+`<paste-pipeline-design-link>`
+
 Detailed request flow:
 
 1. User enters a Walmart product URL in the Streamlit app
